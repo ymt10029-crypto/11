@@ -1,0 +1,140 @@
+<div class="container">
+    <h1>學生適應表現檢核表（教師版）</h1>
+
+    <div class="instructions">
+        <p><strong>說明：</strong> 請老師根據您對學生最近一週在校表現的觀察，從下拉式選單中選擇最符合的描述。</p>
+    </div>
+
+    <div class="scoring-guide">
+        <h3>評分標準</h3>
+        <ul>
+            <li><strong>4分：</strong>總是如此</li>
+            <li><strong>3分：</strong>經常如此</li>
+            <li><strong>2分：</strong>偶爾如此</li>
+            <li><strong>1分：</strong>從不如此</li>
+        </ul>
+    </div>
+
+    <form id="checklistForm">
+        <h2>A. 課業學習與教室行為適應 (Academic and Classroom Adaptation)</h2>
+        <p>此主題聚焦於學生的學習習慣、對知識點的掌握度，以及與老師的互動情況。</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:10%;">題號</th>
+                    <th>檢核項目</th>
+                    <th style="width:25%;">作答</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>A1</td>
+                    <td>學生在早自修或其他規定時間內，會立刻動手完成該做的事，不會拖拉。</td>
+                    <td>
+                        <select name="A1">
+                            <option value="" selected disabled>請選擇...</option>
+                            <option value="4">總是如此 (4分)</option>
+                            <option value="3">經常如此 (3分)</option>
+                            <option value="2">偶爾如此 (2分)</option>
+                            <option value="1">從不如此 (1分)</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>A2</td>
+                    <td>學生在數學課本的單位換算（如公分與毫米）及直式加減方面，表現穩定且正確。</td>
+                    <td>
+                        <select name="A2">
+                            <option value="" selected disabled>請選擇...</option>
+                            <option value="4">總是如此 (4分)</option>
+                            <option value="3">經常如此 (3分)</option>
+                            <option value="2">偶爾如此 (2分)</option>
+                            <option value="1">從不如此 (1分)</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>A3</td>
+                    <td>學生能專心聽講，並在課堂上積極舉手發言或回答問題。</td>
+                    <td>
+                        <select name="A3">
+                            <option value="" selected disabled>請選擇...</option>
+                            <option value="4">總是如此 (4分)</option>
+                            <option value="3">經常如此 (3分)</option>
+                            <option value="2">偶爾如此 (2分)</option>
+                            <option value="1">從不如此 (1分)</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>A4</td>
+                    <td>學生能遵守課堂規範，不隨意打斷或干擾他人學習。</td>
+                    <td>
+                        <select name="A4">
+                            <option value="" selected disabled>請選擇...</option>
+                            <option value="4">總是如此 (4分)</option>
+                            <option value="3">經常如此 (3分)</option>
+                            <option value="2">偶爾如此 (2分)</option>
+                            <option value="1">從不如此 (1分)</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>B. 同儕互動與人際關係 (Peer Interaction and Social Adaptation)</h2>
+        <p>此主題聚焦於學生與同學的互動、合作能力，以及人際關係的適應情況。</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:10%;">題號</th>
+                    <th>檢核項目</th>
+                    <th style="width:25%;">作答</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>B1</td>
+                    <td>學生能與同學友善互動，並展現合作精神。</td>
+                    <td>
+                        <select name="B1">
+                            <option value="" selected disabled>請選擇...</option>
+                            <option value="4">總是如此 (4分)</option>
+                            <option value="3">經常如此 (3分)</option>
+                            <option value="2">偶爾如此 (2分)</option>
+                            <option value="1">從不如此 (1分)</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>B2</td>
+                    <td>學生能妥善處理與同學之間的衝突，不會動手或惡言相向。</td>
+                    <td>
+                        <select name="B2">
+                            <option value="" selected disabled>請選擇...</option>
+                            <option value="4">總是如此 (4分)</option>
+                            <option value="3">經常如此 (3分)</option>
+                            <option value="2">偶爾如此 (2分)</option>
+                            <option value="1">從不如此 (1分)</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>B3</td>
+                    <td>學生能主動參與小組活動，並在團隊中發揮正向影響。</td>
+                    <td>
+                        <select name="B3">
+                            <option value="" selected disabled>請選擇...</option>
+                            <option value="4">總是如此 (4分)</option>
+                            <option value="3">經常如此 (3分)</option>
+                            <option value="2">偶爾如此 (2分)</option>
+                            <option value="1">從不如此 (1分)</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button type="submit" class="submit-btn">提交檢核表</button>
+    </form>
+</div>
