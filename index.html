@@ -1,140 +1,602 @@
-<div class="container">
-    <h1>學生適應表現檢核表（教師版）</h1>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>Scanner Camera</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-    <div class="instructions">
-        <p><strong>說明：</strong> 請老師根據您對學生最近一週在校表現的觀察，從下拉式選單中選擇最符合的描述。</p>
-    </div>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      -webkit-user-select: none;
+      user-select: none;
+    }
 
-    <div class="scoring-guide">
-        <h3>評分標準</h3>
-        <ul>
-            <li><strong>4分：</strong>總是如此</li>
-            <li><strong>3分：</strong>經常如此</li>
-            <li><strong>2分：</strong>偶爾如此</li>
-            <li><strong>1分：</strong>從不如此</li>
-        </ul>
-    </div>
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background: linear-gradient(145deg, #0a0a0a 0%, #1a1a2e 50%, #0f0f23 100%);
+    }
 
-    <form id="checklistForm">
-        <h2>A. 課業學習與教室行為適應 (Academic and Classroom Adaptation)</h2>
-        <p>此主題聚焦於學生的學習習慣、對知識點的掌握度，以及與老師的互動情況。</p>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:10%;">題號</th>
-                    <th>檢核項目</th>
-                    <th style="width:25%;">作答</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>A1</td>
-                    <td>學生在早自修或其他規定時間內，會立刻動手完成該做的事，不會拖拉。</td>
-                    <td>
-                        <select name="A1">
-                            <option value="" selected disabled>請選擇...</option>
-                            <option value="4">總是如此 (4分)</option>
-                            <option value="3">經常如此 (3分)</option>
-                            <option value="2">偶爾如此 (2分)</option>
-                            <option value="1">從不如此 (1分)</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>A2</td>
-                    <td>學生在數學課本的單位換算（如公分與毫米）及直式加減方面，表現穩定且正確。</td>
-                    <td>
-                        <select name="A2">
-                            <option value="" selected disabled>請選擇...</option>
-                            <option value="4">總是如此 (4分)</option>
-                            <option value="3">經常如此 (3分)</option>
-                            <option value="2">偶爾如此 (2分)</option>
-                            <option value="1">從不如此 (1分)</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>A3</td>
-                    <td>學生能專心聽講，並在課堂上積極舉手發言或回答問題。</td>
-                    <td>
-                        <select name="A3">
-                            <option value="" selected disabled>請選擇...</option>
-                            <option value="4">總是如此 (4分)</option>
-                            <option value="3">經常如此 (3分)</option>
-                            <option value="2">偶爾如此 (2分)</option>
-                            <option value="1">從不如此 (1分)</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>A4</td>
-                    <td>學生能遵守課堂規範，不隨意打斷或干擾他人學習。</td>
-                    <td>
-                        <select name="A4">
-                            <option value="" selected disabled>請選擇...</option>
-                            <option value="4">總是如此 (4分)</option>
-                            <option value="3">經常如此 (3分)</option>
-                            <option value="2">偶爾如此 (2分)</option>
-                            <option value="1">從不如此 (1分)</option>
-                        </select>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    #app-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
 
-        <h2>B. 同儕互動與人際關係 (Peer Interaction and Social Adaptation)</h2>
-        <p>此主題聚焦於學生與同學的互動、合作能力，以及人際關係的適應情況。</p>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:10%;">題號</th>
-                    <th>檢核項目</th>
-                    <th style="width:25%;">作答</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>B1</td>
-                    <td>學生能與同學友善互動，並展現合作精神。</td>
-                    <td>
-                        <select name="B1">
-                            <option value="" selected disabled>請選擇...</option>
-                            <option value="4">總是如此 (4分)</option>
-                            <option value="3">經常如此 (3分)</option>
-                            <option value="2">偶爾如此 (2分)</option>
-                            <option value="1">從不如此 (1分)</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>B2</td>
-                    <td>學生能妥善處理與同學之間的衝突，不會動手或惡言相向。</td>
-                    <td>
-                        <select name="B2">
-                            <option value="" selected disabled>請選擇...</option>
-                            <option value="4">總是如此 (4分)</option>
-                            <option value="3">經常如此 (3分)</option>
-                            <option value="2">偶爾如此 (2分)</option>
-                            <option value="1">從不如此 (1分)</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>B3</td>
-                    <td>學生能主動參與小組活動，並在團隊中發揮正向影響。</td>
-                    <td>
-                        <select name="B3">
-                            <option value="" selected disabled>請選擇...</option>
-                            <option value="4">總是如此 (4分)</option>
-                            <option value="3">經常如此 (3分)</option>
-                            <option value="2">偶爾如此 (2分)</option>
-                            <option value="1">從不如此 (1分)</option>
-                        </select>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #00ff88;
+      background: rgba(0, 0, 0, 0.5);
+      flex-shrink: 0;
+    }
 
-        <button type="submit" class="submit-btn">提交檢核表</button>
-    </form>
-</div>
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 12px;
+      min-height: 0;
+      overflow-y: auto;
+    }
+
+    .title-font {
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    @keyframes scanLine {
+      0% { top: 0%; }
+      100% { top: 100%; }
+    }
+    
+    .scan-line {
+      animation: scanLine 2s linear infinite;
+    }
+    
+    .scanner-grid {
+      background-image: 
+        linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    
+    .corner-bracket {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-color: #00ff88;
+    }
+    
+    .corner-tl { top: 8px; left: 8px; border-top: 2px solid #00ff88; border-left: 2px solid #00ff88; }
+    .corner-tr { top: 8px; right: 8px; border-top: 2px solid #00ff88; border-right: 2px solid #00ff88; }
+    .corner-bl { bottom: 8px; left: 8px; border-bottom: 2px solid #00ff88; border-left: 2px solid #00ff88; }
+    .corner-br { bottom: 8px; right: 8px; border-bottom: 2px solid #00ff88; border-right: 2px solid #00ff88; }
+
+    @keyframes statusBlink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0.4; }
+    }
+    
+    .status-active {
+      animation: statusBlink 2s infinite;
+    }
+
+    #scanner-frame {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      border: 2px solid #00ff88;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+      background: #000;
+    }
+
+    .video-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #0a0a0a;
+    }
+
+    video, #captured-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00ff88;
+    }
+
+    #scan-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00ff88, transparent);
+      display: none;
+    }
+
+    button {
+      border: none;
+      outline: none;
+      font-family: 'Share Tech Mono', monospace;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    #controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #start-btn, #retake-btn, #download-btn {
+      border-radius: 8px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      padding: 14px 16px;
+      font-size: 14px;
+      flex: 1;
+      transition: all 0.2s;
+    }
+
+    #start-btn {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #0a0a0a;
+      box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);
+    }
+
+    #capture-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff3366 0%, #cc2952 100%);
+      color: white;
+      box-shadow: 0 4px 20px rgba(255, 51, 102, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 0;
+    }
+
+    #capture-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    #retake-btn {
+      border: 2px solid #00ff88;
+      color: #00ff88;
+      background: transparent;
+    }
+
+    #download-btn {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    #secondary-controls {
+      display: none;
+    }
+
+    #info-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(0, 255, 136, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      flex-shrink: 0;
+      color: #00ff88;
+    }
+
+    .info-item {
+      text-align: center;
+    }
+
+    .info-label {
+      font-size: 11px;
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="app-container">
+    
+    <header>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="status-active" style="width: 8px; height: 8px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 10px #00ff88;"></div>
+        <h1 id="app-title" class="title-font" style="color: #00ff88; margin: 0; font-size: 18px; font-weight: bold; letter-spacing: 2px;">SCANNER CAM</h1>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: #00ff88;">
+        <span id="timestamp">--:--:--</span>
+      </div>
+    </header>
+
+    <main>
+      
+      <div id="scanner-frame" class="scanner-grid">
+        <div class="video-container">
+          <video id="camera-feed" autoplay playsinline muted></video>
+          <canvas id="capture-canvas" style="display: none;"></canvas>
+          <img id="captured-image" style="display: none;" alt="Captured scan">
+          
+          <div id="placeholder" style="color: #00ff88;">
+            <div style="text-align: center;">
+              <svg style="width: 60px; height: 60px; margin: 0 auto 16px; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <p style="font-size: 14px; opacity: 0.7; margin: 0;">點擊下方按鈕啟動掃描器</p>
+            </div>
+          </div>
+        </div>
+        
+        <div id="scan-line"></div>
+        
+        <div class="corner-bracket corner-tl"></div>
+        <div class="corner-bracket corner-tr"></div>
+        <div class="corner-bracket corner-bl"></div>
+        <div class="corner-bracket corner-br"></div>
+        
+        <div style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; font-size: 11px; color: #00ff88;">
+          <span id="status-text">STANDBY</span>
+          <span id="resolution">--</span>
+        </div>
+      </div>
+      
+      <div id="controls">
+        
+        <div class="button-row">
+          <button id="start-btn" style="flex: 1;">
+            <span id="scan-btn-text">啟動掃描器</span>
+          </button>
+          
+          <button id="capture-btn" disabled>
+            <svg style="width: 30px; height: 30px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke-width="2"/>
+              <circle cx="12" cy="12" r="4" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div id="secondary-controls" class="button-row">
+          <button id="retake-btn" style="flex: 1;">重新掃描</button>
+          <button id="download-btn" style="flex: 1;">下載圖片</button>
+        </div>
+      </div>
+      
+      <div id="info-panel">
+        <div class="info-item">
+          <div class="info-label">FRAMES</div>
+          <div id="frame-count" class="info-value title-font">0</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">SCANS</div>
+          <div id="scan-count" class="info-value title-font">0</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">STATUS</div>
+          <div id="device-status" class="info-value title-font" style="font-size: 12px;">READY</div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+
+  <script>
+    const defaultConfig = {
+      app_title: 'SCANNER CAM',
+      scan_button_text: '啟動掃描器'
+    };
+
+    let config = { ...defaultConfig };
+    
+    let stream = null;
+    let isScanning = false;
+    let frameCount = 0;
+    let scanCount = 0;
+    let capturedImageData = null;
+
+    const video = document.getElementById('camera-feed');
+    const canvas = document.getElementById('capture-canvas');
+    const capturedImage = document.getElementById('captured-image');
+    const placeholder = document.getElementById('placeholder');
+    const scanLine = document.getElementById('scan-line');
+    const startBtn = document.getElementById('start-btn');
+    const captureBtn = document.getElementById('capture-btn');
+    const secondaryControls = document.getElementById('secondary-controls');
+    const retakeBtn = document.getElementById('retake-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const statusText = document.getElementById('status-text');
+    const resolutionEl = document.getElementById('resolution');
+    const frameCountEl = document.getElementById('frame-count');
+    const scanCountEl = document.getElementById('scan-count');
+    const deviceStatus = document.getElementById('device-status');
+    const timestampEl = document.getElementById('timestamp');
+    const appTitle = document.getElementById('app-title');
+
+    function updateTimestamp() {
+      const now = new Date();
+      timestampEl.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+    }
+    setInterval(updateTimestamp, 1000);
+    updateTimestamp();
+
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+          audio: false
+        });
+        
+        video.srcObject = stream;
+        video.style.display = 'block';
+        placeholder.style.display = 'none';
+        capturedImage.style.display = 'none';
+        scanLine.style.display = 'block';
+        
+        setTimeout(() => {
+          if (video.videoWidth && video.videoHeight) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            resolutionEl.textContent = `${video.videoWidth}x${video.videoHeight}`;
+          }
+        }, 500);
+        
+        isScanning = true;
+        statusText.textContent = 'SCANNING...';
+        deviceStatus.textContent = 'ACTIVE';
+        document.getElementById('scan-btn-text').textContent = '停止掃描';
+        captureBtn.disabled = false;
+        secondaryControls.style.display = 'none';
+        frameCount = 0;
+        frameCountEl.textContent = '0';
+        
+        countFrames();
+        
+      } catch (err) {
+        console.error('Camera error:', err);
+        statusText.textContent = 'CAM ERROR';
+        let errorMsg = '無法存取相機';
+        let errorDetail = '請確認已授予相機權限';
+        
+        placeholder.innerHTML = `
+          <div style="text-align: center; color: #ff3366;">
+            <p style="font-weight: bold; margin: 0 0 4px 0; font-size: 16px;">${errorMsg}</p>
+            <p style="font-size: 12px; opacity: 0.7; margin: 0;">${errorDetail}</p>
+          </div>
+        `;
+      }
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+      video.style.display = 'none';
+      scanLine.style.display = 'none';
+      placeholder.style.display = 'flex';
+      isScanning = false;
+      statusText.textContent = 'STANDBY';
+      deviceStatus.textContent = 'READY';
+      document.getElementById('scan-btn-text').textContent = config.scan_button_text || defaultConfig.scan_button_text;
+      captureBtn.disabled = true;
+      resolutionEl.textContent = '--';
+      frameCountEl.textContent = '0';
+    }
+
+    function countFrames() {
+      if (!isScanning) return;
+      frameCount++;
+      frameCountEl.textContent = frameCount;
+      requestAnimationFrame(countFrames);
+    }
+
+    function capturePhoto() {
+      if (!isScanning || !canvas.width || !canvas.height) return;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      for (let i = 0; i < data.length; i += 4) {
+        const row = Math.floor((i / 4) / canvas.width);
+        
+        data[i] = Math.min(255, data[i] * 0.9);
+        data[i + 1] = Math.min(255, data[i + 1] * 1.1);
+        data[i + 2] = Math.min(255, data[i + 2] * 0.9);
+        
+        if (row % 4 === 0) {
+          data[i] = Math.max(0, data[i] - 20);
+          data[i + 1] = Math.max(0, data[i + 1] - 10);
+          data[i + 2] = Math.max(0, data[i + 2] - 20);
+        }
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+      
+      ctx.strokeStyle = '#00ff88';
+      ctx.lineWidth = 3;
+      
+      const bracketSize = Math.min(50, Math.min(canvas.width, canvas.height) / 8);
+      const margin = 15;
+      
+      ctx.beginPath();
+      ctx.moveTo(margin, margin + bracketSize);
+      ctx.lineTo(margin, margin);
+      ctx.lineTo(margin + bracketSize, margin);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.moveTo(canvas.width - margin - bracketSize, margin);
+      ctx.lineTo(canvas.width - margin, margin);
+      ctx.lineTo(canvas.width - margin, margin + bracketSize);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.moveTo(margin, canvas.height - margin - bracketSize);
+      ctx.lineTo(margin, canvas.height - margin);
+      ctx.lineTo(margin + bracketSize, canvas.height - margin);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.moveTo(canvas.width - margin - bracketSize, canvas.height - margin);
+      ctx.lineTo(canvas.width - margin, canvas.height - margin);
+      ctx.lineTo(canvas.width - margin, canvas.height - margin - bracketSize);
+      ctx.stroke();
+      
+      const fontSize = Math.max(16, Math.min(canvas.height / 20, 24));
+      ctx.font = `${fontSize}px "Share Tech Mono", monospace`;
+      ctx.fillStyle = '#00ff88';
+      const timestamp = new Date().toLocaleString();
+      ctx.fillText(`SCAN #${scanCount + 1} | ${timestamp}`, margin + 10, canvas.height - margin - 10);
+      
+      capturedImageData = canvas.toDataURL('image/png');
+      capturedImage.src = capturedImageData;
+      
+      video.style.display = 'none';
+      scanLine.style.display = 'none';
+      capturedImage.style.display = 'block';
+      
+      scanCount++;
+      scanCountEl.textContent = scanCount;
+      statusText.textContent = 'CAPTURED';
+      
+      secondaryControls.style.display = 'flex';
+      captureBtn.disabled = true;
+      
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+      isScanning = false;
+    }
+
+    function retakePhoto() {
+      capturedImage.style.display = 'none';
+      capturedImageData = null;
+      secondaryControls.style.display = 'none';
+      startCamera();
+    }
+
+    function downloadPhoto() {
+      if (!capturedImageData) return;
+      
+      const link = document.createElement('a');
+      link.download = `scan_${Date.now()}.png`;
+      link.href = capturedImageData;
+      link.click();
+    }
+
+    startBtn.addEventListener('click', () => {
+      if (isScanning) {
+        stopCamera();
+      } else if (capturedImage.style.display === 'block') {
+        retakePhoto();
+      } else {
+        startCamera();
+      }
+    });
+
+    captureBtn.addEventListener('click', capturePhoto);
+    retakeBtn.addEventListener('click', retakePhoto);
+    downloadBtn.addEventListener('click', downloadPhoto);
+
+    async function onConfigChange(newConfig) {
+      const title = newConfig.app_title || defaultConfig.app_title;
+      const scanBtnText = newConfig.scan_button_text || defaultConfig.scan_button_text;
+
+      appTitle.textContent = title;
+      
+      if (!isScanning && capturedImage.style.display !== 'block') {
+        document.getElementById('scan-btn-text').textContent = scanBtnText;
+      }
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['app_title', cfg.app_title || defaultConfig.app_title],
+        ['scan_button_text', cfg.scan_button_text || defaultConfig.scan_button_text]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+      config = window.elementSdk.config || defaultConfig;
+      onConfigChange(config);
+    } else {
+      onConfigChange(defaultConfig);
+    }
+
+    window.addEventListener('beforeunload', () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    });
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cf1eb594667f1fa',t:'MTc3MTI5NjAyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
