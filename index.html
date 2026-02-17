@@ -3,32 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Commercial Document Scanner</title>
-<script src="https://docs.opencv.org/4.x/opencv.js"></script>
+<title>Stable Commercial Scanner</title>
+<script async src="https://docs.opencv.org/4.x/opencv.js"></script>
 <style>
-body{margin:0;font-family:Arial;background:#0b0f14;color:#fff}
+body{margin:0;font-family:system-ui;background:#0b0f14;color:#fff}
 #app{display:flex;flex-direction:column;height:100vh}
-header{padding:10px;background:#0f172a;text-align:center;font-weight:bold}
+header{padding:12px;background:#020617;text-align:center;font-weight:700}
 #viewer{flex:1;position:relative;background:#000}
 video,canvas{width:100%;height:100%;object-fit:cover}
-#controls{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px;background:#020617}
-button{padding:12px;border:none;border-radius:6px;font-weight:bold}
+#overlay{position:absolute;inset:0;border:2px solid #16a34a;pointer-events:none}
+#controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;background:#020617}
+button{padding:14px;border:none;border-radius:8px;font-weight:700;font-size:14px}
 .start{background:#16a34a;color:#fff}
 .scan{background:#dc2626;color:#fff}
 .mode{background:#1e293b;color:#fff}
 .download{background:#2563eb;color:#fff}
+button:disabled{opacity:.4}
+#status{padding:6px;text-align:center;font-size:12px;color:#22c55e}
 </style>
 </head>
 <body>
 <div id="app">
-<header>📄 商用文件掃描器 Commercial Scanner</header>
+<header>📄 商用穩定版文件掃描器</header>
 <div id="viewer">
 <video id="video" autoplay playsinline></video>
 <canvas id="canvas"></canvas>
+<div id="overlay"></div>
 </div>
+<div id="status">SYSTEM BOOTING...</div>
 <div id="controls">
-<button class="start" onclick="startCamera()">啟動相機</button>
-<button class="scan" onclick="scan()">掃描</button>
+<button class="start" id="btnCamera">啟動相機</button>
+<button class="scan" id="btnScan" disabled>掃描</button>
 <button class="mode" onclick="setMode('color')">彩色</button>
 <button class="mode" onclick="setMode('gray')">黑白</button>
 <button class="mode" onclick="setMode('enhance')">增強</button>
@@ -40,32 +45,65 @@ button{padding:12px;border:none;border-radius:6px;font-weight:bold}
 let video=document.getElementById('video');
 let canvas=document.getElementById('canvas');
 let ctx=canvas.getContext('2d');
+let statusEl=document.getElementById('status');
+let btnCamera=document.getElementById('btnCamera');
+let btnScan=document.getElementById('btnScan');
+
 let stream=null;
 let mode='color';
 let cvReady=false;
+let cameraReady=false;
+let systemReady=false;
 
-cv['onRuntimeInitialized']=()=>{cvReady=true;console.log('OpenCV Ready')}
+// ===== OpenCV Init =====
+let cvCheck=setInterval(()=>{
+ if(window.cv && cv.Mat){
+  clearInterval(cvCheck);
+  cv['onRuntimeInitialized']=()=>{
+   cvReady=true;
+   statusEl.innerText='OpenCV READY';
+   checkSystem();
+  }
+ }
+},200);
 
-function startCamera(){
- navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(s=>{
-  stream=s;video.srcObject=s;
-  setTimeout(()=>{
-   canvas.width=video.videoWidth;
-   canvas.height=video.videoHeight;
-  },500);
- })
+// ===== Camera Init =====
+btnCamera.onclick=async()=>{
+ try{
+  statusEl.innerText='Camera starting...';
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  video.srcObject=stream;
+  video.onloadedmetadata=()=>{
+   canvas.width=video.videoWidth||1280;
+   canvas.height=video.videoHeight||720;
+   cameraReady=true;
+   statusEl.innerText='Camera READY';
+   checkSystem();
+  }
+ }catch(e){
+  alert('相機啟動失敗:'+e.message);
+ }
+}
+
+function checkSystem(){
+ if(cvReady && cameraReady){
+  systemReady=true;
+  statusEl.innerText='SYSTEM READY';
+  btnScan.disabled=false;
+ }
 }
 
 function setMode(m){mode=m}
 
+btnScan.onclick=()=>scan();
+
 function scan(){
- if(!cvReady){alert('OpenCV尚未準備完成');return}
+ if(!systemReady){alert('系統尚未初始化完成');return}
  ctx.drawImage(video,0,0,canvas.width,canvas.height);
  let src=cv.imread(canvas);
- let output=src.clone();
 
  if(mode==='gray'){
-  let g=new cv.Mat();let bin=new cv.Mat();
+  let g=new cv.Mat(),bin=new cv.Mat();
   cv.cvtColor(src,g,cv.COLOR_RGBA2GRAY);
   cv.adaptiveThreshold(g,bin,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,15,10);
   cv.imshow(canvas,bin);
@@ -80,7 +118,7 @@ function scan(){
  else{
   cv.imshow(canvas,src);
  }
- src.delete();output.delete();
+ src.delete();
 }
 
 function download(){
