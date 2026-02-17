@@ -3,216 +3,206 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Stable Pro Document Scanner</title>
+<title>Stable Pro Scanner v2</title>
 <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-body{background:#0b0f14;color:#e5e7eb;font-family:system-ui}
-#frame{border:2px solid #22c55e;border-radius:14px;overflow:hidden;position:relative}
-.corner{position:absolute;width:28px;height:28px;border:3px solid #22c55e}
-.tl{top:8px;left:8px;border-right:none;border-bottom:none}
-.tr{top:8px;right:8px;border-left:none;border-bottom:none}
-.bl{bottom:8px;left:8px;border-right:none;border-top:none}
-.br{bottom:8px;right:8px;border-left:none;border-top:none}
-.loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);z-index:10}
+  body { background: #0b0f14; color: #e5e7eb; font-family: system-ui; touch-action: manipulation; }
+  #frame { border: 2px solid #22c55e; border-radius: 14px; overflow: hidden; position: relative; background: #000; }
+  .corner { position: absolute; width: 20px; height: 20px; border: 3px solid #22c55e; pointer-events: none; }
+  .tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+  .tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+  .bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+  .br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+  .loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.7); z-index: 20; }
 </style>
 </head>
-<body class="p-3">
-<h1 class="text-xl font-bold text-green-400 mb-2">專業文件掃描器（穩定修正版）</h1>
+<body class="p-4">
+<h1 class="text-xl font-bold text-green-400 mb-3">文件掃描器 (優化穩定版)</h1>
 
-<div id="frame" class="w-full h-[70vh] bg-black mb-3">
+<div id="frame" class="w-full h-[60vh] mb-4">
   <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
   <canvas id="canvas" class="hidden"></canvas>
   <img id="result" class="hidden w-full h-full object-contain" />
-  <div id="loader" class="loader hidden text-green-400">處理中...</div>
+  <div id="loader" class="loader hidden text-green-400 font-bold">影像處理中...</div>
   <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
 </div>
 
-<div class="grid grid-cols-2 gap-2 mb-2">
-<button id="start" class="bg-green-500 py-2 rounded">啟動相機</button>
-<button id="capture" class="bg-red-500 py-2 rounded" disabled>掃描</button>
+<div class="grid grid-cols-2 gap-3 mb-3">
+  <button id="start" class="bg-green-600 hover:bg-green-500 py-3 rounded-lg font-bold">啟動相機</button>
+  <button id="capture" class="bg-red-600 hover:bg-red-500 py-3 rounded-lg font-bold disabled:opacity-50" disabled>擷取掃描</button>
 </div>
 
-<div class="grid grid-cols-3 gap-2 mb-2">
-<button id="color" class="bg-slate-700 py-2 rounded">彩色</button>
-<button id="gray" class="bg-slate-700 py-2 rounded">黑白</button>
-<button id="enhance" class="bg-slate-700 py-2 rounded">增強</button>
+<div class="grid grid-cols-3 gap-2 mb-4">
+  <button onclick="setMode('color')" class="bg-slate-700 py-2 rounded text-sm active:bg-green-500">原色增強</button>
+  <button onclick="setMode('gray')" class="bg-slate-700 py-2 rounded text-sm active:bg-green-500">高對比黑白</button>
+  <button onclick="setMode('enhance')" class="bg-slate-700 py-2 rounded text-sm active:bg-green-500">色彩平衡</button>
 </div>
 
-<div class="grid grid-cols-3 gap-2">
-<button id="download" class="bg-indigo-600 py-2 rounded">下載</button>
-<button id="reset" class="bg-slate-600 py-2 rounded">重掃</button>
-<button id="status" class="bg-slate-800 py-2 rounded text-xs">狀態</button>
+<div class="flex gap-2">
+  <button id="download" class="flex-1 bg-indigo-600 py-3 rounded-lg font-bold">下載結果</button>
+  <button id="reset" class="w-24 bg-slate-600 py-3 rounded-lg font-bold">重置</button>
 </div>
+
+<div id="status" class="mt-4 text-center text-xs text-slate-500 italic">等待 OpenCV 載入...</div>
 
 <script>
-let stream=null,mode='color',cvReady=false,processing=false;
-const video=document.getElementById('video');
-const canvas=document.getElementById('canvas');
-const result=document.getElementById('result');
-const loader=document.getElementById('loader');
-const statusBtn=document.getElementById('status');
+let mode = 'color', cvReady = false, processing = false;
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const result = document.getElementById('result');
+const loader = document.getElementById('loader');
+const statusDiv = document.getElementById('status');
+const captureBtn = document.getElementById('capture');
 
-/* ===== OpenCV Ready Safe ===== */
-function onOpenCvReady(){cvReady=true;console.log('OpenCV Ready')}
-if(typeof cv!=='undefined'){
-  if(cv.getBuildInformation) onOpenCvReady();
-  else document.addEventListener('opencvready',onOpenCvReady);
-}else{
-  document.addEventListener('opencvready',onOpenCvReady);
+// 1. OpenCV 狀態監測
+function onOpenCvReady() {
+  cvReady = true;
+  statusDiv.textContent = 'OpenCV 已就緒';
+  console.log('OpenCV Ready');
 }
 
-/* ===== Camera ===== */
-start.onclick=async()=>{
- try{
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-  video.srcObject=stream;
-  await video.play();
-  capture.disabled=false;
-  statusBtn.textContent='相機已啟動';
- }catch(e){alert('相機存取失敗');}
+if (typeof cv !== 'undefined') {
+  onOpenCvReady();
+} else {
+  window.addEventListener('opencvready', onOpenCvReady);
 }
 
-/* ===== Utils ===== */
-function safeCanvasSize(){
- canvas.width=video.videoWidth||video.clientWidth||1280;
- canvas.height=video.videoHeight||video.clientHeight||720;
+function setMode(m) {
+  mode = m;
+  statusDiv.textContent = `模式已切換：${m}`;
 }
 
-function findDoc(src){
- let gray=new cv.Mat(),blur=new cv.Mat(),edges=new cv.Mat();
- cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY);
- cv.GaussianBlur(gray,blur,new cv.Size(5,5),0);
- cv.Canny(blur,edges,80,200);
- let contours=new cv.MatVector(),hier=new cv.Mat();
- cv.findContours(edges,contours,hier,cv.RETR_LIST,cv.CHAIN_APPROX_SIMPLE);
- let biggest=null,maxA=0;
- for(let i=0;i<contours.size();i++){
-  let c=contours.get(i);
-  let peri=cv.arcLength(c,true);
-  let approx=new cv.Mat();
-  cv.approxPolyDP(c,approx,0.02*peri,true);
-  if(approx.rows===4){let a=cv.contourArea(c);if(a>maxA){biggest=approx;maxA=a;}}
- }
- return biggest;
+// 2. 相機啟動
+document.getElementById('start').onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
+    });
+    video.srcObject = stream;
+    captureBtn.disabled = false;
+    statusDiv.textContent = '相機運作中';
+  } catch (e) {
+    alert('無法存取相機，請檢查權限設定');
+  }
+};
+
+// 3. 核心處理邏輯 (加上自動記憶體回收)
+function processImage() {
+  if (!cvReady) return;
+  
+  let src = cv.imread(canvas);
+  let gray = new cv.Mat(), blur = new cv.Mat(), edges = new cv.Mat(), contours = new cv.MatVector(), hierarchy = new cv.Mat();
+  let dst = new cv.Mat();
+
+  try {
+    // 預處理：找輪廓
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
+    cv.Canny(blur, edges, 75, 200);
+    cv.findContours(edges, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+
+    let biggest = null, maxArea = 0;
+    for (let i = 0; i < contours.size(); i++) {
+      let cnt = contours.get(i);
+      let area = cv.contourArea(cnt);
+      if (area > 5000) { // 最小面積過濾，避免細碎雜訊
+        let peri = cv.arcLength(cnt, true);
+        let approx = new cv.Mat();
+        cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+        if (approx.rows === 4 && area > maxArea) {
+          biggest = approx;
+          maxArea = area;
+        } else {
+          approx.delete(); // 如果不是四邊形就刪除
+        }
+      }
+    }
+
+    // 透視變換處理
+    if (biggest) {
+      let p = biggest.data32F;
+      // 排序點：確保順序為 左上, 右上, 右下, 左下
+      let pts = [];
+      for(let i=0; i<4; i++) pts.push({x: p[i*2], y: p[i*2+1]});
+      pts.sort((a,b) => a.y - b.y);
+      let top = pts.slice(0,2).sort((a,b) => a.x - b.x);
+      let bottom = pts.slice(2,4).sort((a,b) => a.x - b.x);
+      
+      let srcPts = cv.matFromArray(4, 1, cv.CV_32FC2, [top[0].x, top[0].y, top[1].x, top[1].y, bottom[1].x, bottom[1].y, bottom[0].x, bottom[0].y]);
+      let w = canvas.width, h = canvas.height;
+      let dstPts = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, w, 0, w, h, 0, h]);
+      
+      let M = cv.getPerspectiveTransform(srcPts, dstPts);
+      cv.warpPerspective(src, dst, M, new cv.Size(w, h));
+      
+      srcPts.delete(); dstPts.delete(); M.delete();
+    } else {
+      // 沒找到文件則直接使用原圖
+      src.copyTo(dst);
+    }
+
+    // 模式處理
+    if (mode === 'gray') {
+      cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY);
+      cv.adaptiveThreshold(dst, dst, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 10);
+    } else if (mode === 'color') {
+      dst.convertTo(dst, -1, 1.1, 5); // 稍微增加對比與亮度
+    } else if (mode === 'enhance') {
+      cv.cvtColor(dst, dst, cv.COLOR_RGBA2RGB);
+      cv.detailEnhance(dst, dst, 10, 0.15); // 细节增强
+    }
+
+    cv.imshow(canvas, dst);
+
+  } catch (err) {
+    console.error("處理失敗:", err);
+  } finally {
+    // 關鍵：釋放所有記憶體
+    src.delete(); gray.delete(); blur.delete(); edges.delete(); 
+    contours.delete(); hierarchy.delete(); dst.delete();
+    if(biggest) biggest.delete();
+  }
 }
 
-function scan(){
- if(!cvReady){alert('OpenCV尚未載入完成');return}
- let src=cv.imread(canvas);
- if(src.empty()){console.error('Empty frame'); cv.imshow(canvas, src); return;}
- let doc=findDoc(src);
- let output = src.clone();
+// 4. 按鈕事件
+captureBtn.onclick = async () => {
+  if (processing || !cvReady) return;
+  processing = true;
+  loader.classList.remove('hidden');
 
- if(doc){
-   let p=doc.data32F;
-   let srcPts=cv.matFromArray(4,1,cv.CV_32FC2,[p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7]]);
-   let w=canvas.width,h=canvas.height;
-   let dstPts=cv.matFromArray(4,1,cv.CV_32FC2,[0,0,w,0,w,h,0,h]);
-   let M=cv.getPerspectiveTransform(srcPts,dstPts);
-   let warped=new cv.Mat();
-   cv.warpPerspective(src,warped,M,new cv.Size(w,h));
-   output = warped;
- }
+  // 設定 Canvas 尺寸與 Video 一致
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
 
- // ===== Mode Processing =====
- if(mode==='gray'){
-  let g=new cv.Mat(),bin=new cv.Mat();
-  cv.cvtColor(output,g,cv.COLOR_RGBA2GRAY);
-  cv.adaptiveThreshold(g,bin,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,15,10);
-  cv.imshow(canvas,bin);
- } else if(mode==='enhance'){
-  let e=new cv.Mat();
-  output.convertTo(e,-1,1.3,15);
-  cv.imshow(canvas,e);
- } else {
-  cv.imshow(canvas,output);
- }
-}
- let src=cv.imread(canvas);
- let doc=findDoc(src);
- if(!doc){
-  console.warn('No document detected');
-  cv.imshow(canvas,src);
-  return;
- }
- let p=doc.data32F;
- let srcPts=cv.matFromArray(4,1,cv.CV_32FC2,[p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7]]);
- let w=canvas.width,h=canvas.height;
- let dstPts=cv.matFromArray(4,1,cv.CV_32FC2,[0,0,w,0,w,h,0,h]);
- let M=cv.getPerspectiveTransform(srcPts,dstPts);
- let warped=new cv.Mat();
- cv.warpPerspective(src,warped,M,new cv.Size(w,h));
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(video, 0, 0);
 
- if(mode==='gray'){
-  let g=new cv.Mat(),bin=new cv.Mat();
-  cv.cvtColor(warped,g,cv.COLOR_RGBA2GRAY);
-  cv.adaptiveThreshold(g,bin,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,15,10);
-  cv.imshow(canvas,bin);
- }
+  // 非同步處理避免 UI 凍結
+  setTimeout(() => {
+    processImage();
+    result.src = canvas.toDataURL('image/png');
+    result.classList.remove('hidden');
+    video.classList.add('hidden');
+    loader.classList.add('hidden');
+    processing = false;
+    statusDiv.textContent = '掃描完成';
+  }, 50);
+};
 
- if(mode==='color'){
-  let e=new cv.Mat();
-  warped.convertTo(e,-1,1.2,10);
-  cv.imshow(canvas,e);
- }
+document.getElementById('reset').onclick = () => {
+  result.classList.add('hidden');
+  video.classList.remove('hidden');
+  statusDiv.textContent = '重新擷取中';
+};
 
- if(mode==='enhance'){
-  let hsv=new cv.Mat();
-  cv.cvtColor(warped,hsv,cv.COLOR_RGBA2RGB);
-  cv.cvtColor(hsv,hsv,cv.COLOR_RGB2HSV);
-  let ch=new cv.MatVector();cv.split(hsv,ch);
-  let v=ch.get(2);cv.normalize(v,v,0,255,cv.NORM_MINMAX);
-  ch.set(2,v);cv.merge(ch,hsv);
-  cv.cvtColor(hsv,warped,cv.COLOR_HSV2RGBA);
-  cv.imshow(canvas,warped);
- }
-}
-
-/* ===== Capture ===== */
-capture.onclick=async()=>{
- if(processing) return;
- if(!cvReady){alert('OpenCV尚未準備完成');return}
- processing=true; loader.classList.remove('hidden');
-
- safeCanvasSize();
- if(canvas.width===0||canvas.height===0){
-  alert('畫面尚未初始化');processing=false;loader.classList.add('hidden');return;
- }
-
- const ctx=canvas.getContext('2d');
- ctx.drawImage(video,0,0,canvas.width,canvas.height);
-
- try{ scan(); }
- catch(e){ console.error(e); alert('掃描失敗'); }
-
- result.src=canvas.toDataURL('image/png');
- result.classList.remove('hidden');
- video.classList.add('hidden');
-
- loader.classList.add('hidden');
- processing=false;
- statusBtn.textContent='掃描完成';
-}
-
-/* ===== Controls ===== */
-color.onclick=()=>{mode='color';statusBtn.textContent='彩色模式'};
-gray.onclick=()=>{mode='gray';statusBtn.textContent='黑白模式'};
-enhance.onclick=()=>{mode='enhance';statusBtn.textContent='增強模式'};
-
-reset.onclick=()=>{
- result.classList.add('hidden');
- video.classList.remove('hidden');
- statusBtn.textContent='重新掃描';
-}
-
-download.onclick=()=>{
- if(!result.src) return;
- const a=document.createElement('a');
- a.href=result.src;
- a.download='scan.png';
- a.click();
-}
+document.getElementById('download').onclick = () => {
+  if (!result.src || result.classList.contains('hidden')) return;
+  const link = document.createElement('a');
+  link.href = result.src;
+  link.download = `scan_${Date.now()}.png`;
+  link.click();
+};
 </script>
 </body>
 </html>
