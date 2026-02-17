@@ -3,27 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Pro Document Scanner</title>
+<title>Stable Pro Document Scanner</title>
 <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 body{background:#0b0f14;color:#e5e7eb;font-family:system-ui}
-#frame{border:2px solid #22c55e;border-radius:12px;overflow:hidden;position:relative}
+#frame{border:2px solid #22c55e;border-radius:14px;overflow:hidden;position:relative}
 .corner{position:absolute;width:28px;height:28px;border:3px solid #22c55e}
 .tl{top:8px;left:8px;border-right:none;border-bottom:none}
 .tr{top:8px;right:8px;border-left:none;border-bottom:none}
 .bl{bottom:8px;left:8px;border-right:none;border-top:none}
 .br{bottom:8px;right:8px;border-left:none;border-top:none}
-.point{width:18px;height:18px;border-radius:50%;background:#22c55e;position:absolute;touch-action:none}
+.loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);z-index:10}
 </style>
 </head>
 <body class="p-3">
-<h1 class="text-xl font-bold text-green-400 mb-2">專業文件掃描器 Pro</h1>
+<h1 class="text-xl font-bold text-green-400 mb-2">專業文件掃描器（穩定修正版）</h1>
+
 <div id="frame" class="w-full h-[70vh] bg-black mb-3">
-<video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
-<canvas id="canvas" class="hidden"></canvas>
-<img id="result" class="hidden w-full h-full object-contain" />
-<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+  <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
+  <canvas id="canvas" class="hidden"></canvas>
+  <img id="result" class="hidden w-full h-full object-contain" />
+  <div id="loader" class="loader hidden text-green-400">處理中...</div>
+  <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
 </div>
 
 <div class="grid grid-cols-2 gap-2 mb-2">
@@ -38,24 +40,43 @@ body{background:#0b0f14;color:#e5e7eb;font-family:system-ui}
 </div>
 
 <div class="grid grid-cols-3 gap-2">
-<button id="pdf" class="bg-indigo-600 py-2 rounded">輸出PDF</button>
-<button id="ocr" class="bg-indigo-600 py-2 rounded">OCR</button>
 <button id="download" class="bg-indigo-600 py-2 rounded">下載</button>
+<button id="reset" class="bg-slate-600 py-2 rounded">重掃</button>
+<button id="status" class="bg-slate-800 py-2 rounded text-xs">狀態</button>
 </div>
 
 <script>
-let stream=null,mode='color',cvReady=false;
+let stream=null,mode='color',cvReady=false,processing=false;
 const video=document.getElementById('video');
 const canvas=document.getElementById('canvas');
 const result=document.getElementById('result');
+const loader=document.getElementById('loader');
+const statusBtn=document.getElementById('status');
 
-function onOpenCvReady(){cvReady=true}
-if(window.cv) onOpenCvReady(); else document.addEventListener('opencvready',onOpenCvReady);
+/* ===== OpenCV Ready Safe ===== */
+function onOpenCvReady(){cvReady=true;console.log('OpenCV Ready')}
+if(typeof cv!=='undefined'){
+  if(cv.getBuildInformation) onOpenCvReady();
+  else document.addEventListener('opencvready',onOpenCvReady);
+}else{
+  document.addEventListener('opencvready',onOpenCvReady);
+}
 
+/* ===== Camera ===== */
 start.onclick=async()=>{
- stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
- video.srcObject=stream;
- capture.disabled=false;
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  video.srcObject=stream;
+  await video.play();
+  capture.disabled=false;
+  statusBtn.textContent='相機已啟動';
+ }catch(e){alert('相機存取失敗');}
+}
+
+/* ===== Utils ===== */
+function safeCanvasSize(){
+ canvas.width=video.videoWidth||video.clientWidth||1280;
+ canvas.height=video.videoHeight||video.clientHeight||720;
 }
 
 function findDoc(src){
@@ -77,9 +98,14 @@ function findDoc(src){
 }
 
 function scan(){
+ if(!cvReady){alert('OpenCV尚未載入完成');return}
  let src=cv.imread(canvas);
  let doc=findDoc(src);
- if(!doc){cv.imshow(canvas,src);return}
+ if(!doc){
+  console.warn('No document detected');
+  cv.imshow(canvas,src);
+  return;
+ }
  let p=doc.data32F;
  let srcPts=cv.matFromArray(4,1,cv.CV_32FC2,[p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7]]);
  let w=canvas.width,h=canvas.height;
@@ -94,11 +120,13 @@ function scan(){
   cv.adaptiveThreshold(g,bin,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,15,10);
   cv.imshow(canvas,bin);
  }
+
  if(mode==='color'){
   let e=new cv.Mat();
   warped.convertTo(e,-1,1.2,10);
   cv.imshow(canvas,e);
  }
+
  if(mode==='enhance'){
   let hsv=new cv.Mat();
   cv.cvtColor(warped,hsv,cv.COLOR_RGBA2RGB);
@@ -111,28 +139,50 @@ function scan(){
  }
 }
 
-capture.onclick=()=>{
- canvas.width=video.videoWidth;
- canvas.height=video.videoHeight;
- canvas.getContext('2d').drawImage(video,0,0);
- scan();
+/* ===== Capture ===== */
+capture.onclick=async()=>{
+ if(processing) return;
+ if(!cvReady){alert('OpenCV尚未準備完成');return}
+ processing=true; loader.classList.remove('hidden');
+
+ safeCanvasSize();
+ if(canvas.width===0||canvas.height===0){
+  alert('畫面尚未初始化');processing=false;loader.classList.add('hidden');return;
+ }
+
+ const ctx=canvas.getContext('2d');
+ ctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+ try{ scan(); }
+ catch(e){ console.error(e); alert('掃描失敗'); }
+
  result.src=canvas.toDataURL('image/png');
  result.classList.remove('hidden');
  video.classList.add('hidden');
+
+ loader.classList.add('hidden');
+ processing=false;
+ statusBtn.textContent='掃描完成';
 }
 
-color.onclick=()=>mode='color';
-gray.onclick=()=>mode='gray';
-enhance.onclick=()=>mode='enhance';
+/* ===== Controls ===== */
+color.onclick=()=>{mode='color';statusBtn.textContent='彩色模式'};
+gray.onclick=()=>{mode='gray';statusBtn.textContent='黑白模式'};
+enhance.onclick=()=>{mode='enhance';statusBtn.textContent='增強模式'};
+
+reset.onclick=()=>{
+ result.classList.add('hidden');
+ video.classList.remove('hidden');
+ statusBtn.textContent='重新掃描';
+}
 
 download.onclick=()=>{
+ if(!result.src) return;
  const a=document.createElement('a');
  a.href=result.src;
- a.download='scan.png';a.click();
+ a.download='scan.png';
+ a.click();
 }
-
-pdf.onclick=()=>alert('可整合 jsPDF 產生多頁PDF');
-ocr.onclick=()=>alert('可整合 Tesseract.js 進行 OCR');
 </script>
 </body>
 </html>
